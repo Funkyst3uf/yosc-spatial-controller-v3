@@ -1,0 +1,31 @@
+# ==========================================
+# Fichiers de compilation intermédiaires
+# ==========================================
+obj/
+*.o
+
+# ==========================================
+# Exécutables finaux (code machine)
+# ==========================================
+spatial-controller
+dme7-sim
+
+# ==========================================
+# Fichiers générés automatiquement par Flex / Bison
+# ==========================================
+src/y.tab.c
+src/y.tab.h
+src/lex.yy.c
+src/y.output
+
+# ==========================================
+# Configuration de l'IDE (VS Code, etc.)
+# ==========================================
+.vscode/
+
+# ==========================================
+# Fichiers système et sauvegardes éditeurs
+# ==========================================
+*~
+*.swp
+.DS_Store
