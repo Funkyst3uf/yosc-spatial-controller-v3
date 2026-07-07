@@ -29,3 +29,9 @@ src/y.output
 *~
 *.swp
 .DS_Store
+
+# ==========================================
+# Packages et répertoires de staging Debian
+# ==========================================
+*.deb
+spatial-controller_1.0.0_amd64/usr/

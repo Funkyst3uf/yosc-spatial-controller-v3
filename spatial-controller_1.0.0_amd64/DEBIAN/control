@@ -1,0 +1,10 @@
+Package: spatial-controller
+Version: 1.0.0
+Architecture: amd64
+Maintainer: Jonathan <ntoula.jonathan@gmail.com>
+Depends: libc6, liblo7
+Section: sound
+Priority: optional
+Description: Interface graphique et pilote OSC pour processeur immersif Yamaha DME7.
+ Ce logiciel permet de piloter le processeur DME7 via des commandes syntaxiques et une UI en utilisant le protocole OSC sur IP/UDP.
+ 
