@@ -1,0 +1,45 @@
+name: Build Matrix .deb
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Déclenche 3 machines virtuelles en parallèle dans le cloud GitHub
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-latest]
+
+    steps:
+      # 1. Récupère ton code source sur la machine virtuelle
+      - uses: actions/checkout@v4
+      
+      # 2. Installe tout l'environnement requis (compilateur, bison, flex, liblo)
+      - name: Installer les dépendances système
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential bison flex liblo-dev \
+            libasound2-dev libx11-dev libxrandr-dev libxi-dev \
+            libxinerama-dev libxcursor-dev libgl1-mesa-dev
+
+      # 3. Compile et installe Raylib proprement sur la machine virtuelle
+      - name: Compiler et installer Raylib
+        run: |
+          git clone --depth 1 https://github.com/raysan5/raylib.git /tmp/raylib
+          cd /tmp/raylib/src
+          make PLATFORM=PLATFORM_DESKTOP
+          sudo make install
+
+      # 4. Compile ton code C et génère le paquet .deb natif pour cet OS
+      - name: Compiler et packager le logiciel
+        run: |
+          make
+          dpkg-deb --build spatial-controller_1.0.0_amd64
+          # Renomme le paquet pour identifier l'OS d'origine (ex: spatial-controller_ubuntu-22.04.deb)
+          mv spatial-controller_1.0.0_amd64.deb spatial-controller_${{ matrix.os }}.deb
+
+      # 5. Extrait et stocke le .deb final dans l'onglet "Actions" de ton GitHub
+      - name: Sauvegarder le .deb sur GitHub (Artéfacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: paquets-deb-${{ matrix.os }}
+          path: spatial-controller_*.deb
