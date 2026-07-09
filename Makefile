@@ -10,6 +10,12 @@ LIBS = -llo -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 CLIENT_TARGET = spatial-controller
 SERVER_TARGET = dme7-sim
 
+# --- CONFIGURATION DU PACKAGING DEBIAN ---
+PKG_NAME = spatial-controller
+PKG_VERSION = 1.0.0
+PKG_ARCH = amd64
+PKG_DIR = $(PKG_NAME)_$(PKG_VERSION)_$(PKG_ARCH)
+
 # --- DOSSIER DES OBJETS ---
 OBJ_DIR = obj
 
@@ -74,11 +80,27 @@ $(OBJ_DIR)/lex.yy.o: src/lex.yy.c src/y.tab.h
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c src/lex.yy.c -o $@
 
+# --- INDUSTRIALISATION : CREATION DU PAQUET SYSTEME DEBIAN ---
+
+package: $(CLIENT_TARGET)
+	@echo "=== [1/3] Preparation de l'arborescence du paquet ==="
+	mkdir -p $(PKG_DIR)/usr/bin
+	@echo "=== [2/3] Copie du binaire de production ==="
+	cp $(CLIENT_TARGET) $(PKG_DIR)/usr/bin/
+	@echo "=== [3/3] Validation et construction via dpkg-deb ==="
+	@if [ ! -f $(PKG_DIR)/DEBIAN/control ]; then \
+		echo "ERREUR : Le fichier de configuration $(PKG_DIR)/DEBIAN/control is introuvable !"; \
+		exit 1; \
+	fi
+	dpkg-deb --build $(PKG_DIR)
+	@echo "=== Paquet généré avec succès ! ==="
+
 # --- NETTOYAGE ---
 
 clean:
 	rm -rf $(OBJ_DIR) $(CLIENT_TARGET) $(SERVER_TARGET) src/y.tab.c src/y.tab.h src/y.output src/lex.yy.c
+	rm -rf $(PKG_DIR)/usr *.deb
 
 re: clean all
 
-.PHONY: all clean re client server parser tomato
+.PHONY: all clean re client server parser tomato package
