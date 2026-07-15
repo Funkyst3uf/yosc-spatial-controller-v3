@@ -45,14 +45,15 @@ object_id:
     YINT {
         if ($1 < 1 || $1 > 64) {
             fprintf(stderr, "\n[ERREUR SÉMANTIQUE] ID %d hors limites.\n", $1);             
-            YYERROR; /* Interrompt et annule la commande courante */         }         
+            YYERROR; /* Interrompt et annule la commande courante */         
+            }         
             $$ = $1;
     }
     ;
 ```
 Une fois les arguments validés (comme des temps de trajet positifs, ou des états binaires 0/1 pour le MUTE), la règle de production globale peut déclencher l'action en toute sécurité. 
 
-Exemple avec un déplacement continu (MOVE) vers des coordonnées explicites :
+Exemple avec un déplacement continu (`MOVE) vers des coordonnées explicites :
 
 ```yacc
 move_cmd:
@@ -65,17 +66,17 @@ move_cmd:
 ```
 
 
-## 4. Intégration Continue (CI/CD)
+## 4. Compilation et Création Automatique des Paquets
 
-Le dépôt intègre un processus automatisé via **GitHub Actions** (défini dans le fichier `.github/workflows/build.yml`).
+Le dépôt intègre un processus automatisé via **GitHub Actions** (défini dans le fichier `.github/workflows/build.yml`). 
 
-À chaque fois que le code est envoyé sur le dépôt distant, des machines virtuelles sont lancées dans le cloud pour compiler le projet dans un environnement d'exploitation strict, simulant le poste d'un utilisateur final. 
+Concrètement, à chaque fois que du nouveau code est envoyé sur le dépôt, des serveurs distants s'occupent de vérifier que l'application se compile correctement et fabriquent les fichiers d'installation. Cela garantit que le code fonctionne dans un environnement strict, tout comme sur le PC d'un utilisateur final.
 
-Une matrice est configurée pour tester simultanément trois générations de distributions Ubuntu LTS : les versions 22.04, 24.04 et 26.04.
+Pour s'assurer d'une compatibilité maximale, l'application est testée simultanément sur trois générations d'Ubuntu (les versions LTS 22.04, 24.04 et 26.04).
 
-Ainsi : 
+Voici ce qui se passe automatiquement en arrière-plan : 
 
-1. Trois machines virtuelles Ubuntu sont préparées et démarrées.
-2. Les dépendances de compilation sont installées.
-3. Le projet est compilé automatiquement.
-4. Les paquets Debian sont générés et mis à disposition en téléchargement pour les utilisateurs finaux (onglet Action).
+1. **Préparation :** Trois machines virtuelles Ubuntu vierges démarrent.
+2. **Installation :** Les outils et dépendances nécessaires sont téléchargés.
+3. **Vérification :** Le code est compilé pour s'assurer qu'il n'y a aucune erreur.
+4. **Distribution :** Les paquets d'installation (`.deb`) sont générés et mis à disposition dans l'onglet **Actions** de GitHub.
