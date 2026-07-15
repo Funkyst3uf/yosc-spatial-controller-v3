@@ -51,7 +51,7 @@ spatial-controller 192.168.1.2 50528
 
 L'interface graphique se compose d'un champ de saisie (en bas) et d'un journal d'exécution (au centre) affichant le retour du parseur syntaxique.
 
-* `![Interface](images/92.png)`*
+![Interface](images/92.png)
 
 Vous pouvez chaîner plusieurs commandes en les séparant par un point-virgule (`;`). Vous pouvez - on non - terminer chaque instruction par un (`;`)
 
