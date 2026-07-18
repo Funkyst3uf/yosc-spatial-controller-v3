@@ -31,7 +31,7 @@ src/y.output
 .DS_Store
 
 # ==========================================
-# Packages et répertoires de staging Debian
+# Paquets finaux et dossier d'assemblage Debian
 # ==========================================
 *.deb
 spatial-controller_1.0.0_amd64/usr/
