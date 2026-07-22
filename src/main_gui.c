@@ -24,8 +24,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define MAX_HISTORY 13  
-#define BUFFER_SIZE 256
+#define MAX_HISTORY 13  // Nombre maximum de lignes visibles simultanément à l'écran dans l'historique de l'UI
+#define BUFFER_SIZE 256 // Fixe la limite (en caractères) de la zone de saisie de l'UI
 
 extern Point3D objets[];
 
@@ -85,95 +85,95 @@ int main(int ac, char *av[]) {
     GuiSetStyle(TEXTBOX, BORDER_COLOR_PRESSED, ColorToInt(LIGHTGRAY));
     GuiSetStyle(TEXTBOX, TEXT_COLOR_PRESSED, ColorToInt(LIGHTGRAY));
 
-    char textBuffer[BUFFER_SIZE] = "\0";
-    char history[MAX_HISTORY][BUFFER_SIZE + 8];
+    char textBuffer[BUFFER_SIZE] = "\0"; // Zone mémoire stockant la frappe de l'utilisateur
+    char history[MAX_HISTORY][BUFFER_SIZE + 8]; // Tableau stockant l'historique de l'écran
     
-    for (int i = 0; i < MAX_HISTORY; i++) history[i][0] = '\0';
+    for (int i = 0; i < MAX_HISTORY; i++) history[i][0] = '\0'; // Purge de l'historique au lancement
     
     // Message d'accueil indiquant les paramètres réseau utilisés
     snprintf(history[MAX_HISTORY - 1], BUFFER_SIZE + 8, "Connecte au DME7 [%s:%s]. Pret.", target_ip, target_port);
 
     // Début de la boucle de rendu asynchrone
     while (!WindowShouldClose()) {
-        bool executerCommande = false;
+        bool executerCommande = false; // Drapeau déterminant si une analyse doit être lancée
 
-        if (IsKeyPressed(KEY_ENTER)) executerCommande = true; 
+        if (IsKeyPressed(KEY_ENTER)) executerCommande = true; // Validation clavier (touche Entrée)
 
-        BeginDrawing();
-        ClearBackground(BLACK); 
+        BeginDrawing(); // Prépare le moteur graphique à dessiner la frame courante
+        ClearBackground(BLACK); // Nettoie l'écran précédent avec un fond noir
 
-        BeginScissorMode(0, 0, 750, 495);
+        BeginScissorMode(0, 0, 750, 495); // Restreint l'affichage pour éviter que le texte ne déborde sur l'interface
         for (int i = 0; i < MAX_HISTORY; i++) {
             if (history[i][0] != '\0') {
-                Color textColor = (history[i][0] == '>') ? LIGHTGRAY : WHITE;
-                DrawText(history[i], 25, 25 + (i * 32), 20, textColor);
+                Color textColor = (history[i][0] == '>') ? LIGHTGRAY : WHITE; // Grise la saisie utilisateur, met en valeur les réponses
+                DrawText(history[i], 25, 25 + (i * 32), 20, textColor); // Affiche la ligne d'historique à l'écran
             }
         }
-        EndScissorMode();
+        EndScissorMode(); // Fin de la zone d'affichage restreinte
 
-        DrawLine(0, 510, 800, 510, DARKGRAY);
+        DrawLine(0, 510, 800, 510, DARKGRAY); // Ligne de séparation esthétique au-dessus de la zone de texte
         
-        GuiTextBox((Rectangle){ 25, 530, 605, 40 }, textBuffer, BUFFER_SIZE, true);
+        GuiTextBox((Rectangle){ 25, 530, 605, 40 }, textBuffer, BUFFER_SIZE, true); // Affiche et gère le champ de saisie
         
-        if (GuiButton((Rectangle){ 645, 530, 130, 40 }, "Envoyer")) executerCommande = true;
+        if (GuiButton((Rectangle){ 645, 530, 130, 40 }, "Envoyer")) executerCommande = true; // Validation souris (Bouton Envoyer)
 
-        EndDrawing();
+        EndDrawing(); // Finalise le rendu et affiche la frame à l'écran
 
         if (executerCommande && textBuffer[0] != '\0') {
             for (int i = 0; i < (MAX_HISTORY - 1); i++) {
-                memmove(history[i], history[i + 1], BUFFER_SIZE + 8);
+                memmove(history[i], history[i + 1], BUFFER_SIZE + 8); // Décale l'historique vers le haut d'une ligne
             }
             
-            snprintf(history[MAX_HISTORY - 1], BUFFER_SIZE + 8, "> %s", textBuffer);
+            snprintf(history[MAX_HISTORY - 1], BUFFER_SIZE + 8, "> %s", textBuffer); // Injecte la commande tapée en bas de l'écran
 
-            bool doitQuitter = (strcmp(textBuffer, "QUIT") == 0);
+            bool doitQuitter = (strcmp(textBuffer, "QUIT") == 0); // Surveille la demande d'arrêt du programme
             
             char tempBuffer[BUFFER_SIZE + 2];
-            snprintf(tempBuffer, sizeof(tempBuffer), "%s\n", textBuffer);
+            snprintf(tempBuffer, sizeof(tempBuffer), "%s\n", textBuffer); // Ajoute le saut de ligne requis par le parseur Bison
 
             char *ptrBuffer = NULL;
             size_t sizeBuffer = 0;
                 
-            FILE *memStream = open_memstream(&ptrBuffer, &sizeBuffer);
+            FILE *memStream = open_memstream(&ptrBuffer, &sizeBuffer); // Ouvre un flux dirigé vers un buffer en RAM
 
-            FILE *old_stdout = stdout;
-            FILE *old_stderr = stderr;
+            FILE *old_stdout = stdout; // Sauvegarde la sortie standard d'origine
+            FILE *old_stderr = stderr; // Sauvegarde la sortie d'erreur d'origine
 
-            stdout = memStream;
-            stderr = memStream;
+            stdout = memStream; // Détourne les messages normaux vers la RAM
+            stderr = memStream; // Détourne les messages d'erreur vers la RAM
 
-            YY_BUFFER_STATE bp = yy_scan_string(tempBuffer);
-            yyparse();
-            yy_delete_buffer(bp);
+            YY_BUFFER_STATE bp = yy_scan_string(tempBuffer); // Fournit le texte à analyser au lexer (Flex)
+            yyparse(); // Lance l'analyse de la grammaire et l'exécution (Bison)
+            yy_delete_buffer(bp); // Nettoie la mémoire du lexer
 
-            fflush(memStream);
-            fclose(memStream);
+            fflush(memStream); // Force l'écriture des dernières données dans la RAM
+            fclose(memStream); // Ferme le flux de redirection
             
-            stdout = old_stdout;
-            stderr = old_stderr;
+            stdout = old_stdout; // Restaure la sortie standard
+            stderr = old_stderr; // Restaure la sortie d'erreur
 
             if (ptrBuffer != NULL && sizeBuffer > 0) {
-                char *line = strtok(ptrBuffer, "\n\r");
+                char *line = strtok(ptrBuffer, "\n\r"); // Découpe le texte récupéré ligne par ligne
                 while (line != NULL) {
                     if (strlen(line) > 0) {
                         for (int i = 0; i < (MAX_HISTORY - 1); i++) {
-                            memmove(history[i], history[i + 1], BUFFER_SIZE + 8);
+                            memmove(history[i], history[i + 1], BUFFER_SIZE + 8); // Décale l'historique vers le haut
                         }
-                        snprintf(history[MAX_HISTORY - 1], BUFFER_SIZE + 8, "%s", line);
+                        snprintf(history[MAX_HISTORY - 1], BUFFER_SIZE + 8, "%s", line); // Injecte la réponse du parseur
                     }
-                    line = strtok(NULL, "\n\r");
+                    line = strtok(NULL, "\n\r"); // Passe à la ligne suivante
                 }
-                free(ptrBuffer); 
+                free(ptrBuffer); // Libère la mémoire allouée par open_memstream
             }
 
-            textBuffer[0] = '\0';
+            textBuffer[0] = '\0'; // Vide la zone de texte pour la commande suivante
             
-            if (doitQuitter) break;
+            if (doitQuitter) break; // Quitte la boucle de rendu si nécessaire
         }
     }
 
-    CloseWindow();
-    close(fd);
+    CloseWindow(); // Détruit le contexte graphique et ferme la fenêtre
+    close(fd); // Ferme proprement la socket réseau
     
     return 0;
 }
