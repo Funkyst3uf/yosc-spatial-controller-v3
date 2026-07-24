@@ -4,6 +4,11 @@ Ce projet est un contrôleur spatial doté d'une interface graphique légère (G
 
 À l'aide d'un analyseur lexical et syntaxique robuste généré par **Flex et Bison**, ce contrôleur traduit un langage de script dédié en paquets réseau binaires. Ces paquets sont transmis en temps réel au DME7 via le protocole **OSC (Open Sound Control) sur UDP**. L'interface graphique offre un environnement de travail dédié.
 
+> [!NOTE]
+> ** Accès aux paquets précompilés (.deb)**
+> Suite à l'automatisation de la compilation et du packaging sous **GitHub Actions**, les paquets Debian générés se trouvent dans l'onglet **Actions** de ce dépôt. 
+> Pour les télécharger : cliquez sur le dernier *workflow* exécuté avec succès, puis descendez tout en bas de la page dans la section **Artifacts**.
+
 ---
 
 ## 1. Stack Technique
